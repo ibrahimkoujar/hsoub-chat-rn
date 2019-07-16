@@ -21,10 +21,6 @@ class EditProfileScreen extends Component {
         };
     }
 
-    componentDidMount() {
-        this.handleChoosePhoto();
-    }
-
     handleChoosePhoto = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             allowsEditing: true,
