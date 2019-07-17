@@ -4,9 +4,9 @@ import { Thumbnail } from 'native-base';
 import { Urls } from '../config';
 import avatar from "../assets/images/avatar.png";
 
-export default ({ source, isLocal, type }) => {
+export default ({ source, type }) => {
 
-    let uri = isLocal ? source : Urls.AVATARS + source;
+    let uri = source instanceof Object ? source.uri : Urls.AVATARS + source;
 
     source = source ? { uri : uri } : avatar;
 

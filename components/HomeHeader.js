@@ -1,7 +1,7 @@
 import React from "react";
 import {Header, Body, Title, View, Right, Button, Icon, Left, Item, Input } from "native-base";
 import { StyleSheet } from 'react-native'
-import { Constants  } from 'expo';
+import Constants from 'expo-constants';
 import {Colors, Strings} from "../config";
 
 class HomeHeader extends React.Component {

@@ -12,8 +12,7 @@ class EditProfileScreen extends Component {
 
     constructor(props) {
         super(props);
-        const { navigation } = props;
-        let user = navigation.getParam('profile', {});
+        let user = props.chat.account
         this.state = {
             name: user.name,
             about: user.about,
@@ -38,7 +37,7 @@ class EditProfileScreen extends Component {
     navToPassword = () => this.props.navigation.navigate('Password');
 
     logout = async () => {
-        this.props.chat.socket.disconnect();
+        this.props.chat.logout();
         await Auth.logout();
         this.props.navigation.navigate('Login')
     };
@@ -64,7 +63,7 @@ class EditProfileScreen extends Component {
         const data = new FormData();
         data.append('name', name);
         data.append('about', about);
-        if (avatar.isObject){
+        if (avatar instanceof Object){
             let fileType = avatar.uri.split('.').pop();
             data.append('avatar', {
                 uri: avatar.uri,
@@ -90,7 +89,7 @@ class EditProfileScreen extends Component {
                     <Content>
                         <View style={styles.avatarContainer}>
                             <TouchableOpacity onPress={this.handleChoosePhoto}>
-                                <Avatar type='profile' source={this.state.avatar ? this.state.avatar.uri : null} isLocal />
+                                <Avatar type='profile' source={this.state.avatar} />
                             </TouchableOpacity>
                         </View>
                         <Form style={styles.form}>

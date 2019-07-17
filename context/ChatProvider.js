@@ -16,7 +16,7 @@ export class ChatProvider extends React.Component {
      */
     connect = async () => {
         let token = await Auth.getToken();
-        let socket = io(Urls.SOCKET, {query: 'token=' + token});
+        let socket = io(Urls.SOCKET, { query: 'token=' + token });
         // Handle user connected event.
         socket.on('connect', () => this.setState({connected: true}));
         // Handle user disconnected event.
@@ -38,6 +38,11 @@ export class ChatProvider extends React.Component {
         return socket;
     };
 
+    logout = () => {
+        this.state.socket.disconnect();
+        this.setState({contacts: [], messages: []});
+    }
+
     /**
      * Load user account from async storage.
      */
@@ -49,7 +54,17 @@ export class ChatProvider extends React.Component {
     /**
      * @param contact
      */
-    setCurrentContact = contact => this.setState({contact});
+    setCurrentContact = contact => {
+        this.setState({contact});
+        // Mark unseen messages as seen.
+        if(!contact || !contact.id) return;
+        this.state.socket.emit('seen', contact.id);
+        let messages = this.state.messages;
+        messages.forEach((element, index) => {
+            if(element.sender === contact.id) messages[index].seen = true;
+        });
+        this.setState({messages});
+    };
 
     /**
      * Send message.
@@ -90,9 +105,9 @@ export class ChatProvider extends React.Component {
         messages: [],
         contact: {},
         account: null,
-        profile: false,
         connected: false,
         connect: this.connect,
+        logout: this.logout,
         loadUserAccount: this.loadUserAccount,
         status: this.status,
         setCurrentContact: this.setCurrentContact,

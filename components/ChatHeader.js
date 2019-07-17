@@ -1,7 +1,7 @@
 import React from "react";
 import { Header, Title, View, Right, Button, Icon, Text } from "native-base";
 import { StyleSheet } from 'react-native'
-import { Constants  } from 'expo';
+import Constants from 'expo-constants';
 import { Colors } from "../config";
 import Avatar from "./Avatar";
 

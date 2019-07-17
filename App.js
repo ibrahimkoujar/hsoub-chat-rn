@@ -1,9 +1,11 @@
 import React from "react";
-import { AppLoading, Font } from 'expo';
+import { AppLoading } from 'expo';
+import * as Font from 'expo-font';
 import AppNavigation from './config/routes';
 import { Root } from "native-base";
 import { ChatProvider } from "./context/ChatProvider";
-import { I18nManager} from 'react-native';
+import { I18nManager, YellowBox } from 'react-native';
+
 class App extends React.Component {
 
   constructor(props) {
@@ -13,6 +15,11 @@ class App extends React.Component {
       this.state = {
         isReady: false,
       }
+      console.ignoredYellowBox = ['Remote debugger'];
+      YellowBox.ignoreWarnings([
+          'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
+      ]);
+
   }
 
   async _getFonts() {
