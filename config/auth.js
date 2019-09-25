@@ -1,31 +1,25 @@
 import { AsyncStorage } from 'react-native';
 
-const Auth = {
-
+export default {
+    
     /**
      * Set user
      * @param user
      */
-    setUser: async (user) => await AsyncStorage.setItem('user', JSON.stringify(user)),
-
+    setUser: async user => await AsyncStorage.setItem(
+        'user', JSON.stringify(user)
+    ),
+    
     /**
      * Get user
-     */
-    getUser: async () => {
-        let user = await AsyncStorage.getItem('user');
-        return JSON.parse(user);
-    },
-
-    /**
-     * Delete user data.
-     */
-    logout: async () => await AsyncStorage.removeItem('user'),
+     */  
+    getUser: async () => JSON.parse(await AsyncStorage.getItem('user')),
 
     /**
      * Is user authenticated.
      * @returns {boolean}
      */
-    auth: async () => await AsyncStorage.getItem('user') !== null,
+    auth: async () => await AsyncStorage.getItem('user') != null,
 
     /**
      * Get user token.
@@ -40,12 +34,15 @@ const Auth = {
      * Update user profile
      * @param newProfile
      */
-    updateProfile: async (newProfile) => {
-        let user = JSON.parse( await AsyncStorage.getItem('user'));
-        newProfile.token = user.token;
-        await AsyncStorage.setItem('user', JSON.stringify(newProfile));
+    updateProfile: async profile => {
+        let user = JSON.parse(await AsyncStorage.getItem('user'));
+        profile.token = user.token;
+        await AsyncStorage.setItem('user', JSON.stringify(profile));
     },
 
-};
-
-export default Auth;
+    /**
+     * Delete user data.
+     */
+    logout: async () => await AsyncStorage.removeItem('user')
+    
+}

@@ -1,13 +1,8 @@
 import React from 'react';
 import io from "socket.io-client";
-import { Moment, Strings, Auth, Urls } from "../config";
+import { Auth, Urls, Strings, Moment } from "../config";
 
-const ChatContext = React.createContext({
-    connected: false,
-    connect: () => {},
-    status: () => {},
-    loadUserAccount: () => {}
-});
+const ChatContext = React.createContext();
 
 export class ChatProvider extends React.Component {
 
@@ -16,40 +11,26 @@ export class ChatProvider extends React.Component {
      */
     connect = async () => {
         let token = await Auth.getToken();
-        let socket = io(Urls.SOCKET, { query: 'token=' + token });
-        // Handle user connected event.
+        let socket = io(Urls.SOCKET, { query: 'token=' + token});
         socket.on('connect', () => this.setState({connected: true}));
-        // Handle user disconnected event.
-        socket.on('disconnect', () => this.setState({connected: false}));
-        // Handle user data event (after connection).
+        socket.on('disconnect', () => this.setState({connected: true}));
         socket.on('data', this.onData);
-        // Handle new user event.
-        socket.on('new_user', this.onNewUser);
-        // Handle update user event.
-        socket.on('update_user', this.onUpdateUser);
-        // Handle incoming message event.
         socket.on('message', this.onNewMessage);
-        // Handle changes for user presence.
         socket.on('user_status', this.updateUsersState);
-        // Handle typing or composing event.
         socket.on('typing', this.onTypingMessage);
-        // Set user socket as state variable.
+        socket.on('new_user', this.onNewUser);
+        socket.on('update_user', this.onUpdateUser);
         this.setState({socket});
         return socket;
-    };
-
-    logout = () => {
-        this.state.socket.disconnect();
-        this.setState({contacts: [], messages: []});
     }
 
     /**
      * Load user account from async storage.
      */
-    loadUserAccount = async () =>  {
+    loadUserAccount = async () => {
         let account = await Auth.getUser();
         this.setState({ account });
-    };
+    }
 
     /**
      * @param contact
@@ -71,53 +52,64 @@ export class ChatProvider extends React.Component {
      * @param content
      */
     sendMessage = content => {
-        
         if(!this.state.contact.id) return;
-        
         let message = {
             content: content,
             sender: this.state.account.id,
             receiver: this.state.contact.id,
             date: new Date().getTime()
-        };
-
+        }
         message = this.formatMessage(message);
         let messages = this.state.messages.concat(message);
-        this.setState({messages});
-        
+        this.setState({ messages });
         this.state.socket.emit('message', message);
-    };
+    }
 
     /**
      * Send typing(composing) message.
      */
     sendType = () => this.state.socket.emit('typing', this.state.contact.id);
 
+    /**
+     * Get current contact status.
+     */
     status = () => {
-        let status = this.state.contact.status; 
+        let status = this.state.contact.status;
         if(this.state.typing) return Strings.WRITING_NOW;
         if(status === true) return Strings.ONLINE;
         if(status) return Moment(status).fromNow();
-    };
+    }
 
+    /**
+     * Logout, Disconnect from socket.io and remove data 
+     */
+    logout = () => {
+        this.state.socket.disconnect();
+        this.setState({ contacts: [], messages: [], contact: {} });
+    }
+
+    /**
+     * Context data.
+     */
     state = {
-        contacts: [],
-        messages: [],
-        contact: {},
-        account: null,
         connected: false,
         connect: this.connect,
-        logout: this.logout,
         loadUserAccount: this.loadUserAccount,
-        status: this.status,
         setCurrentContact: this.setCurrentContact,
         sendMessage: this.sendMessage,
         sendType: this.sendType,
+        status: this.status,
+        logout: this.logout,
         socket: null,
-    };
+        account: null,
+        typing: false,
+        contact: {},
+        contacts: [],
+        messages: []
+    }
 
-    render() {
-        return (
+    render(){
+        return(
             <ChatContext.Provider value={this.state}>
                 {this.props.children}
             </ChatContext.Provider>
@@ -134,44 +126,10 @@ export class ChatProvider extends React.Component {
      * @param users
      */
     onData = (user, contacts, messages, users) => {
-        let contact = contacts[0] || {};
         messages = messages.map(this.formatMessage);
-        this.setState({messages, contacts, user, contact}, () => {
+        this.setState({messages, contacts, user}, () => {
             this.updateUsersState(users);
         });
-    };
-
-    /**
-     * Handle new user event.
-     * @param user
-     */
-    onNewUser = user => {
-        // Add user to contacts list.
-        let contacts = this.state.contacts.concat(user);
-        this.setState({contacts});
-    };
-
-    /**
-     * Handle update user event.
-     * @param user
-     */
-    onUpdateUser = async user => {
-        // Add updated user is the current user then update local storage data.
-        if (this.state.account.id === user.id) {
-            this.setState({account: user});
-            await Auth.updateProfile(user);
-            return;
-        }
-        // Update contact data.
-        let contacts = this.state.contacts;
-        contacts.forEach((element, index) => {
-            if(element.id === user.id) {
-                contacts[index] = user;
-                contacts[index].status = element.status;
-            }
-        });
-        this.setState({contacts});
-        if (this.state.contact.id === user.id) this.setState({contact: user});
     };
 
     /**
@@ -179,36 +137,31 @@ export class ChatProvider extends React.Component {
      * @param message
      */
     onNewMessage = message => {
-        // If user is already in chat then mark the message as seen.
         if(message.sender === this.state.contact.id){
-            this.setState({typing: false});
+            this.setState({ typing: false });
             this.state.socket.emit('seen', this.state.contact.id);
             message.seen = true;
         }
-        // Add message to messages list.
         let messages = this.state.messages.concat(this.formatMessage(message));
-        this.setState({messages});
-    };
+        this.setState({ messages });
+    }
 
     /**
      * Handle typing or composing event.
      * @param sender
      */
     onTypingMessage = sender => {
-        // If the typer not the current chat user then ignore it.
-        if(this.state.contact.id !== sender) return;
-        // Set typer.
+        if(this.state.contact.id != sender) return;
         this.setState({typing: sender});
-        // Create timeout function to remove typing status after 3 seconds.
         clearTimeout(this.state.timeout);
         const timeout = setTimeout(this.typingTimeout, 3000);
-        this.setState({timeout});
-    };
+        this.setState({ timeout });
+    }
 
     /**
      * Clear typing status.
      */
-    typingTimeout = () => this.setState({typing: false});
+    typingTimeout = () => this.setState({ typing: false });
 
     /**
      * update users statuses.
@@ -225,6 +178,39 @@ export class ChatProvider extends React.Component {
         this.setState({contact});
     };
 
+    /**
+     * Handle new user event.
+     * @param user
+     */
+    onNewUser = user => {
+        let contacts = this.state.contacts.concat(user);
+        this.setState({ contacts });
+    }
+
+    /**
+     * Handle update user event.
+     * @param user
+     */
+    onUpdateUser = async user => {
+        if (this.state.account.id === user.id) {
+            this.setState({account: user});
+            await Auth.updateProfile(user);
+            return;
+        }
+        let contacts = this.state.contacts;
+        contacts.forEach((element, index) => {
+            if(element.id === user.id) {
+                contacts[index] = user;
+                contacts[index].status = element.status;
+            }
+        });
+        this.setState({contacts});
+        if (this.state.contact.id === user.id) this.setState({contact: user});
+    }
+
+    /**
+     * Format message structure with gifted chat. 
+     */
     formatMessage = message => {
         message._id = message._id || message.date;
         message.text = message.content;
@@ -236,16 +222,14 @@ export class ChatProvider extends React.Component {
 }
 
 export function withChatContext(Component) {
-    class ComponentWithChat extends React.Component {
-        static displayName = `${Component.displayName || Component.name}`;
-        render() {
+    class ComponentWithChat extends React.Component{
+        render(){
             return (
                 <ChatContext.Consumer>
-                    { chat => <Component {...this.props} chat={chat} ref={this.props.onRef} /> }
+                    { chat => <Component {...this.props} chat={chat} /> }
                 </ChatContext.Consumer>
             );
         }
     }
-
     return ComponentWithChat;
 }

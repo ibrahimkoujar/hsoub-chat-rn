@@ -1,16 +1,18 @@
 import React from "react";
 import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
-import colors from "../config/colors";
+import { Colors } from "../config";
 
 export default ({ title, loading }) => {
+    if (!loading) {
+        return null;
+    }
 
-    return loading ? (
+    return (
         <View style={styles.container}>
-            <ActivityIndicator size={75} color={colors.LOADING_CIRCLE} />
+            <ActivityIndicator size={75} color={Colors.LOADING_CIRCLE} />
             {title && <Text style={styles.text}>{title}</Text>}
         </View>
-    )
-    : null;
+    );
 };
 
 const styles = StyleSheet.create({
@@ -19,11 +21,11 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: colors.WHITE,
+        backgroundColor: Colors.WHITE,
         zIndex: 9999
     },
     text: {
-        color: colors.BLACK,
+        color: Colors.BLACK,
         marginTop: 15,
         fontSize: 18
     }

@@ -1,10 +1,10 @@
-import Contact from "./Contact";
-import Loader from "./Loader";
-import ChatHeader from "./ChatHeader";
-import HomeHeader from "./HomeHeader";
-import Avatar from "./Avatar";
-import Header from "./Header";
+import Loader from './Loader';
+import HomeHeader from './HomeHeader';
+import Avatar from './Avatar';
+import Contact from './Contact';
+import ChatHeader from './ChatHeader';
+import Header from './Header';
 
 export {
-    Contact, Loader, HomeHeader, ChatHeader, Avatar, Header
+    Loader, HomeHeader, Avatar, Contact, ChatHeader, Header
 }

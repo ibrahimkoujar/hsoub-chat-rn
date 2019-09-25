@@ -6,44 +6,58 @@ import { Auth, Axios, Strings, Urls } from "../config";
 import styles from "./styles/auth";
 
 class PasswordScreen extends Component {
-
+    
     state = {
-        password: "",
-        newPassword: "",
-    };
+        password: '',
+        newPassword: ''
+    }
 
+    /**
+     * On password change listener.
+     */
     onPasswordChange = password => this.setState({ password });
 
+    /**
+     * On new password change listener.
+     */
     onNewPasswordChange = newPassword => this.setState({ newPassword });
 
-    validate() {
+    /**
+     * Validate password and new password.
+     */
+    validate(){
         Keyboard.dismiss();
-        if (!this.state.password) {
-            Toast.show({text: Strings.PASSWORD_REQUIRED, type: 'danger' });
+        if(!this.state.password){
+            Toast.show({ text: Strings.PASSWORD_REQUIRED, type: 'danger'});
             return false;
         }
-        if (!this.state.newPassword) {
-            Toast.show({text: Strings.NEW_PASSWORD_REQUIRED, type: 'danger' });
+        if(!this.state.newPassword){
+            Toast.show({ text: Strings.NEW_PASSWORD_REQUIRED, type: 'danger'});
             return false;
         }
         return true;
     }
 
+    /**
+     * Send change password request to server.
+     */
     send = async () => {
-        if (!this.validate()) return;
-        let data = { password: this.state.password, newPassword: this.state.newPassword };
-        try {
+        if(!this.validate()) return;
+        let data = {
+            password: this.state.password, newPassword: this.state.newPassword
+        }
+        try{
             Axios.defaults.headers.common.Authorization = await Auth.getToken();
             await Axios.post(Urls.CHANGE_PASSWORD, data);
-            this.setState({password: "", newPassword: "" });
-            Toast.show({text: Strings.PASSWORD_CHANGED, type: 'success' });
+            this.setState({ password: '', newPassword: '' });
+            Toast.show({ text: Strings.PASSWORD_CHANGED, type: 'success' });
         } catch (e) {
-            Toast.show({text: e.response.data.message, type: 'danger' });
+            Toast.show({ text: e.response.data.message, type: 'danger' });
         }
-    };
+    }
 
-    render() {
-        return (
+    render(){
+        return(
             <Container>
                 <Header title={Strings.TITLE_CHANGE_PASSWORD}/>
                 <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
@@ -76,8 +90,9 @@ class PasswordScreen extends Component {
                     </Content>
                 </KeyboardAvoidingView>
             </Container>
-        )
+        );
     }
+
 }
 
 export default PasswordScreen

@@ -14,6 +14,7 @@ const strings = {
     CREATE_NEW_ACCOUNT: "إنشاء حساب جديد",
     CHANGE_PASSWORD: "تغيير كلمة المرور",
     LOGOUT: "تسجيل الخروج",
+    SAVE: "حفظ",
 
     // Placeholders
     NAME_PLACEHOLDER: "الاسم",
@@ -29,6 +30,7 @@ const strings = {
     NEW_PASSWORD_REQUIRED: "الرجاء إدخال كلمة المرور الجديدة",
     ABOUT_REQUIRED: "الرجاء إدخال رسالة الحالة",
 
+	// Global
     PLEASE_WAIT: 'الرجاء الإنتظار',
     SEARCH: "بحث",
     MENU: "الخيارات",
@@ -37,8 +39,8 @@ const strings = {
     WRITING_NOW: "يكتب الآن",
     ONLINE: "متصل الآن",
     DEFAULT_STATUS_MESSAGE: "أهلًا، أنا أستعمل محادثة حسوب",
-    SAVE: "حفظ",
     PASSWORD_CHANGED: "تم تغيير كلمة المرور بنجاح",
     PROFILE_UPDATED: "تم تحديث الملف الشخصي بنجاح",
+
 };
 export default strings;
